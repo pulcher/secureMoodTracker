@@ -21,7 +21,7 @@
     <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
     <DebugMachineType>Device</DebugMachineType>
     <PlatformToolset>GCC_AzureSphere_1_0</PlatformToolset>
-    <ProjectName>AvnetStarterKitOLED</ProjectName>
+    <ProjectName>secureMoodTracker</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
@@ -51,6 +51,7 @@
     <ClCompile Include="lsm6dso_reg.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="epoll_timerfd_utilities.c" />
+    <ClCompile Include="mcp23x17.c" />
     <ClCompile Include="oled.c" />
     <ClCompile Include="parson.c" />
     <ClCompile Include="sd1306.c" />
@@ -60,6 +61,7 @@
     <ClInclude Include="connection_strings.h" />
     <ClInclude Include="deviceTwin.h" />
     <ClInclude Include="epoll_timerfd_utilities.h" />
+    <ClInclude Include="mcp23x17.h" />
     <ClInclude Include="oled.h" />
     <ClInclude Include="parson.h" />
     <ClInclude Include="sd1306.h" />

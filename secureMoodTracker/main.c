@@ -33,7 +33,7 @@
    TODO
    1. Add support for a OLED display
    2. Add supprt for on-board light sensor
-   	 
+
    *************************************************************************************************/
 
 // TODO: update all of these comments when I get something working. 
