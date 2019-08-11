@@ -1,0 +1,23 @@
+{
+  "SchemaVersion": 1,
+  "Name": "Secure Mood Tracker",
+  "ComponentId": "685f13af-25a5-40b2-8dd8-8cbc253ecbd8",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [ "Secure-Mood-Tracker" ],
+  "Capabilities": {
+    //// M4 application connection (Replace the xxxx placeholder with your M4 application's ComponentID)
+    "AllowedApplicationConnections": [  ],
+    //// IoT Central application connection (Replace the xxxx placeholder with your IOTC application's ComponentID)
+    "AllowedConnections": [  ],
+    "AllowedTcpServerPorts": [],
+    "AllowedUdpServerPorts": [],
+    "Gpio": [ 0, 4, 5, 8, 9, 10, 12, 13, 34, 1 ],
+    "Uart": [],
+    "I2cMaster": [ "ISU2" ],
+    "SpiMaster": [],
+    "WifiConfig": true,
+    "NetworkConfig": false,
+    "SystemTime": false
+  },
+  "ApplicationType": "Default"
+}

@@ -1,0 +1,1 @@
+Secure method to transfering IoT data to the cloud for further examination.
