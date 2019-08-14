@@ -5,8 +5,10 @@
 
 #include "mcp23x17.h"
 
-// pixel data of OLED screen
+// pixel data of  screen
 uint8_t mcp23x17_buffer[BUFFER_SIZE];
+
+uint8_t mcp23x17_addr = mcp23x17_DEFAULT_ADDR;
 
 // Lock up table to reverse byte's bits
 static const uint8_t BitReverseTable256[] =
@@ -78,84 +80,91 @@ int32_t mcp23x17_write_data(uint8_t addr, uint8_t *data)
   * @param  None.
   * @retval Positive if was unsuccefully, zero if was succefully.
   */
-uint8_t mcp23x17_init(void)
+//uint8_t mcp23x17_init(uint8_t addr)
+//{
+//	//// OLED turn off and check if OLED is connected
+//	//if (mcp23x17_send_command(mcp23x17_ADDR, 0xae) < 0)
+//	//{
+//	//	return 1;
+//	//}
+//	//// Set display oscillator freqeuncy and divide ratio
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xd5);
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x50);
+//
+//	//// Set multiplex ratio
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xa8);
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x3f);
+//	//// Set display start line
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xd3);
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x00);
+//	//// Set the lower comulmn address
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x00);
+//	//// Set the higher comulmn address
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x10);
+//
+//	//// Set page address
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xb0);
+//
+//	//// Charge pump
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x8d);
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x14);
+//
+//	//// Memory mode
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x20);
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x00);
+//
+//	//// Set segment from left to right
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xa0 | 0x01);
+//	//// Set OLED upside up
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xc8);
+//	//// Set common signal pad configuration
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xda);
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x12);
+//
+//	//// Set Contrast
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x81);
+//	//// Contrast data
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x00);
+//
+//	//// Set discharge precharge periods
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xd9);
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xf1);
+//
+//	//// Set common mode pad output voltage
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xdb);
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x40);
+//
+//	//// Set Enire display
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xa4);
+//
+//	//// Set Normal display
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xa6);
+//	//// Stop scroll
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x2e);
+//
+//	//// OLED turn on
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0xaf);
+//
+//	//// Set column address
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x21);
+//	//// Start Column
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x00);
+//	//// Last column
+//	//mcp23x17_send_command(mcp23x17_ADDR, 127);
+//
+//	//// Set page address
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x22);
+//	//// Start Page
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x00);
+//	//// Last Page
+//	//mcp23x17_send_command(mcp23x17_ADDR, 0x07);
+//
+//	return 0;
+//}
+
+uint8_t mcp23x17_init(uint8_t addr)
 {
-	// OLED turn off and check if OLED is connected
-	if (mcp23x17_send_command(mcp23x17_ADDR, 0xae) < 0)
-	{
-		return 1;
-	}
-	// Set display oscillator freqeuncy and divide ratio
-	mcp23x17_send_command(mcp23x17_ADDR, 0xd5);
-	mcp23x17_send_command(mcp23x17_ADDR, 0x50);
-
-	// Set multiplex ratio
-	mcp23x17_send_command(mcp23x17_ADDR, 0xa8);
-	mcp23x17_send_command(mcp23x17_ADDR, 0x3f);
-	// Set display start line
-	mcp23x17_send_command(mcp23x17_ADDR, 0xd3);
-	mcp23x17_send_command(mcp23x17_ADDR, 0x00);
-	// Set the lower comulmn address
-	mcp23x17_send_command(mcp23x17_ADDR, 0x00);
-	// Set the higher comulmn address
-	mcp23x17_send_command(mcp23x17_ADDR, 0x10);
-
-	// Set page address
-	mcp23x17_send_command(mcp23x17_ADDR, 0xb0);
-
-	// Charge pump
-	mcp23x17_send_command(mcp23x17_ADDR, 0x8d);
-	mcp23x17_send_command(mcp23x17_ADDR, 0x14);
-
-	// Memory mode
-	mcp23x17_send_command(mcp23x17_ADDR, 0x20);
-	mcp23x17_send_command(mcp23x17_ADDR, 0x00);
-
-	// Set segment from left to right
-	mcp23x17_send_command(mcp23x17_ADDR, 0xa0 | 0x01);
-	// Set OLED upside up
-	mcp23x17_send_command(mcp23x17_ADDR, 0xc8);
-	// Set common signal pad configuration
-	mcp23x17_send_command(mcp23x17_ADDR, 0xda);
-	mcp23x17_send_command(mcp23x17_ADDR, 0x12);
-
-	// Set Contrast
-	mcp23x17_send_command(mcp23x17_ADDR, 0x81);
-	// Contrast data
-	mcp23x17_send_command(mcp23x17_ADDR, 0x00);
-
-	// Set discharge precharge periods
-	mcp23x17_send_command(mcp23x17_ADDR, 0xd9);
-	mcp23x17_send_command(mcp23x17_ADDR, 0xf1);
-
-	// Set common mode pad output voltage
-	mcp23x17_send_command(mcp23x17_ADDR, 0xdb);
-	mcp23x17_send_command(mcp23x17_ADDR, 0x40);
-
-	// Set Enire display
-	mcp23x17_send_command(mcp23x17_ADDR, 0xa4);
-
-	// Set Normal display
-	mcp23x17_send_command(mcp23x17_ADDR, 0xa6);
-	// Stop scroll
-	mcp23x17_send_command(mcp23x17_ADDR, 0x2e);
-
-	// OLED turn on
-	mcp23x17_send_command(mcp23x17_ADDR, 0xaf);
-
-	// Set column address
-	mcp23x17_send_command(mcp23x17_ADDR, 0x21);
-	// Start Column
-	mcp23x17_send_command(mcp23x17_ADDR, 0x00);
-	// Last column
-	mcp23x17_send_command(mcp23x17_ADDR, 127);
-
-	// Set page address
-	mcp23x17_send_command(mcp23x17_ADDR, 0x22);
-	// Start Page
-	mcp23x17_send_command(mcp23x17_ADDR, 0x00);
-	// Last Page
-	mcp23x17_send_command(mcp23x17_ADDR, 0x07);
+	mcp23x17_addr = addr;
 
 	return 0;
 }
