@@ -50,6 +50,7 @@
 #include "i2c.h"
 #include "lsm6dso_reg.h"
 #include "lps22hh_reg.h"
+#include "mcp23x17.h"
 
 /* Private variables ---------------------------------------------------------*/
 static axis3bit16_t data_raw_acceleration;
@@ -74,6 +75,7 @@ float altitude;
 // Status variables
 uint8_t lsm6dso_status = 1;
 uint8_t lps22hh_status = 1;
+uint8_t mcp23x17_status = 1;
 uint8_t RTCore_status = 1;
 
 //Extern variables
@@ -112,7 +114,7 @@ void AccelTimerEventHandler(EventData *eventData)
 #if (defined(IOT_CENTRAL_APPLICATION) || defined(IOT_HUB_APPLICATION))
 	static bool firstPass = true;
 #endif
-	// Consume the event.  If we don't do this we'll come right back 
+	// Consume the event.  If we don't do this we'll come right back
 	// to process the same event again
 	if (ConsumeTimerFdEvent(accelTimerFd) != 0) {
 		terminationRequired = true;
@@ -226,7 +228,7 @@ void AccelTimerEventHandler(EventData *eventData)
 		if (pjsonBuffer == NULL) {
 			Log_Debug("ERROR: not enough memory to send telemetry");
 		}
-		
+
 		snprintf(pjsonBuffer, JSON_BUFFER_SIZE, "{\"gX\":\"%.2lf\", \"gY\":\"%.2lf\", \"gZ\":\"%.2lf\", \"aX\": \"%.2f\", \"aY\": \"%.2f\", \"aZ\": \"%.2f\", \"pressure\": \"%.2f\", \"light_intensity\": \"%.2f\", \"altitude\": \"%.2f\", \"temp\": \"%.2f\",  \"rssi\": \"%d\"}",
 			angular_rate_dps[0], angular_rate_dps[1], angular_rate_dps[2], acceleration_mg[0], acceleration_mg[1], acceleration_mg[2], pressure_hPa, light_sensor, altitude, lsm6dsoTemperature_degC, network_data.rssi);
 
@@ -238,7 +240,7 @@ void AccelTimerEventHandler(EventData *eventData)
 
 	firstPass = false;
 
-#endif 
+#endif
 
 }
 
@@ -248,7 +250,7 @@ void AccelTimerEventHandler(EventData *eventData)
 /// <returns>0 on success, or -1 on failure</returns>
 int initI2c(void) {
 
-	// Begin MT3620 I2C init 
+	// Begin MT3620 I2C init
 
 	i2cFd = I2CMaster_Open(MT3620_RDB_HEADER4_ISU2_I2C);
 	if (i2cFd < 0) {
@@ -306,7 +308,7 @@ int initI2c(void) {
 		lsm6dso_status = 0;
 		oled_i2c_bus_status(1);
 	}
-		
+
 	 // Restore default configuration
 	lsm6dso_reset_set(&dev_ctx, PROPERTY_ENABLE);
 	do {
@@ -328,7 +330,7 @@ int initI2c(void) {
 	lsm6dso_gy_full_scale_set(&dev_ctx, LSM6DSO_2000dps);
 
 	 // Configure filtering chain(No aux interface)
-	// Accelerometer - LPF1 + LPF2 path	
+	// Accelerometer - LPF1 + LPF2 path
 	lsm6dso_xl_hp_path_on_out_set(&dev_ctx, LSM6DSO_LP_ODR_DIV_100);
 	lsm6dso_xl_filter_lp2_set(&dev_ctx, PROPERTY_ENABLE);
 
@@ -343,7 +345,7 @@ int initI2c(void) {
 	int failCount = 10;
 
 	while (!lps22hhDetected) {
-		
+
 		// Enable pull up on master I2C interface.
 		lsm6dso_sh_pin_mode_set(&dev_ctx, LSM6DSO_INTERNAL_PULL_UP);
 
@@ -351,7 +353,7 @@ int initI2c(void) {
 		lps22hh_device_id_get(&pressure_ctx, &whoamI);
 		if (whoamI != LPS22HH_ID) {
 			Log_Debug("LPS22HH not found!\n");
-			
+
 			// OLED update
 			lps22hh_status = 1;
 			oled_i2c_bus_status(2);
@@ -387,6 +389,56 @@ int initI2c(void) {
 			Log_Debug("Failed to read LSM22HH device ID, exiting\n");
 			return -1;
 		}
+
+		bool mcp23x17Detected = false;
+		int failCount = 10;
+
+		while (!mcp23x17Detected) {
+
+			// Enable pull up on master I2C interface.
+			//mcp23x17Detected_sh_pin_mode_set(&dev_ctx, LSM6DSO_INTERNAL_PULL_UP);
+
+			// Check if mcp23x17Detected is connected
+			mcp23x17_device_id_get(&pressure_ctx, &whoamI);
+			if (whoamI != mcp23x17_DEFAULT_ADDR) {
+				Log_Debug("MCP23x17 not found!\n");
+
+				// OLED update
+				mcp23x17_status = 1;
+				oled_i2c_bus_status(3);
+
+			}
+			else {
+				mcp23x17Detected = true;
+				Log_Debug("MCP23X17 Found!\n");
+
+				// OLED update
+				mcp23x17_status = 0;
+				oled_i2c_bus_status(3);
+			}
+
+			//// Restore the default configuration
+			//lps22hh_reset_set(&pressure_ctx, PROPERTY_ENABLE);
+			//do {
+			//	lps22hh_reset_get(&pressure_ctx, &rst);
+			//} while (rst);
+
+			//// Enable Block Data Update
+			//lps22hh_block_data_update_set(&pressure_ctx, PROPERTY_ENABLE);
+
+			////Set Output Data Rate
+			//lps22hh_data_rate_set(&pressure_ctx, LPS22HH_10_Hz_LOW_NOISE);
+
+			// If we failed to detect the mcp23x17Detected device, then pause before trying again.
+			if (!mcp23x17Detected) {
+				HAL_Delay(100);
+			}
+
+			if (failCount-- == 0) {
+				Log_Debug("Failed to read LSM22HH device ID, exiting\n");
+				return -1;
+			}
+		}
 	}
 
 	// Read the raw angular rate data from the device to use as offsets.  We're making the assumption that the device
@@ -394,8 +446,8 @@ int initI2c(void) {
 
 	uint8_t reg;
 
-	
-	Log_Debug("LSM6DSO: Calibrating angular rate . . .\n"); 
+
+	Log_Debug("LSM6DSO: Calibrating angular rate . . .\n");
 	Log_Debug("LSM6DSO: Please make sure the device is stationary.\n");
 
 	do {
@@ -471,7 +523,7 @@ static int32_t platform_write(int *fD, uint8_t reg, uint8_t *bufp,
 		Log_Debug("%0x: ", bufp[i]);
 	}
 	Log_Debug("\n");
-#endif 
+#endif
 
 	// Construct a new command buffer that contains the register to write to, then the data to write
 	uint8_t cmdBuffer[len + 1];
@@ -547,7 +599,7 @@ static int32_t platform_read(int *fD, uint8_t reg, uint8_t *bufp,
 		Log_Debug("%0x: ", bufp[i]);
 	}
 	Log_Debug("\n\n");
-#endif 	   
+#endif
 
 	return 0;
 }
@@ -626,7 +678,7 @@ static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, ui
 
 	/* Disable accelerometer. */
 	lsm6dso_xl_data_rate_set(&dev_ctx, LSM6DSO_XL_ODR_OFF);
-	
+
 	// For each byte we need to read from the lps22hh
 	for (int i = 0; i < len; i++) {
 
@@ -636,7 +688,7 @@ static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, ui
 		sh_cfg_read.slv_len = 1;
 
 		// Call the command to read the data from the sensor hub.
-		// This data will be read from the device connected to the 
+		// This data will be read from the device connected to the
 		// sensor hub, and saved into a register for us to read.
 		ret = lsm6dso_sh_slv0_cfg_read(&dev_ctx, &sh_cfg_read);
 		lsm6dso_sh_slave_connected_set(&dev_ctx, LSM6DSO_SLV_0);
@@ -664,7 +716,7 @@ static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, ui
 		lsm6dso_xl_data_rate_set(&dev_ctx, LSM6DSO_XL_ODR_OFF);
 
 		// Read the data from the device.  The call below reads
-		// all 18 sensor hub data.  We just need the data from 
+		// all 18 sensor hub data.  We just need the data from
 		// sensor hub 1, so copy that into our data array.
 		uint8_t buffer[18];
 		lsm6dso_sh_read_data_raw_get(&dev_ctx, buffer);
@@ -676,7 +728,7 @@ static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, ui
 			Log_Debug("[%0x] ", data[i]);
 		}
 		Log_Debug("\n", len);
-#endif 
+#endif
 	}
 
 	/* Re-enable accelerometer */

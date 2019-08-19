@@ -1,7 +1,7 @@
 #pragma once
 
-#ifndef HEADER_sd1306_H
-#define HEADER_sd1306_H
+#ifndef HEADER_mcp23x17_H
+#define HEADER_mcp23x17_H
 
 
 #include <stdint.h>
@@ -12,9 +12,41 @@
 #include <stdlib.h>
 
 
-#define mcp23x17_DEFAULT_ADDR 0x27U
+#define mcp23x17_DEFAULT_ADDR 0x20U
 
 #define BUFFER_SIZE 128/8
+
+#define MCP23X17_WHO_AM_I                        0x0FU
+// TODO: look this up.  seems a way to ask a device for its id?
+
+/**
+  * @}
+  *
+*/
+
+/* * @addtogroup  LPS22HH_Interfaces_Functions
+	* @brief       This section provide a set of functions used to read and
+	*              write a generic register of the device.
+	*              MANDATORY: return 0 -> no Error.
+	* @{
+	*
+*/
+
+typedef int32_t(*mcp23x17_write_ptr)(void*, uint8_t, uint8_t*, uint16_t);
+typedef int32_t(*mcp23x17_read_ptr) (void*, uint8_t, uint8_t*, uint16_t);
+
+typedef struct {
+	/** Component mandatory fields **/
+	mcp23x17_write_ptr  write_reg;
+	mcp23x17_read_ptr   read_reg;
+	/** Customizable optional pointer **/
+	void* handle;
+} mcp23x17_ctx_t;
+
+int32_t mcp23x17_read_reg(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data, uint16_t len);
+int32_t mcp23x17_write_reg(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data, uint16_t len);
+
+int32_t mcp23x17_device_id_get(mcp23x17_ctx_t* ctx, uint8_t* buff);
 
 //#define _swap(a, b) (((a) ^= (b)), ((b) ^= (a)), ((a) ^= (b)))
 
@@ -75,7 +107,7 @@ extern uint8_t mcp23x17_init(uint8_t addr);
   * @brief  Send buffer to mcp23x17
   * @retval None.
   */
-extern void mcp23x17_refresh(void);
+//extern void mcp23x17_refresh(void);
 
 /**
   * @brief  Set all buffer's bytes to zero

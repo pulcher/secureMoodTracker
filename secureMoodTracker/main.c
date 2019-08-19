@@ -421,7 +421,7 @@ static int InitPeripheralsAndHandlers(void)
 	if (buttonPollTimerFd < 0) {
 		return -1;
 	}
-	
+
 	// Tell the system about the callback function that gets called when we receive a device twin update message from Azure
 	AzureIoT_SetDeviceTwinUpdateCallback(&deviceTwinChangedHandler);
 
@@ -434,7 +434,7 @@ static int InitPeripheralsAndHandlers(void)
 static void ClosePeripheralsAndHandlers(void)
 {
     Log_Debug("Closing file descriptors.\n");
-    
+
 	closeI2c();
     CloseFdAndPrintError(epollFd, "Epoll");
 	CloseFdAndPrintError(buttonPollTimerFd, "buttonPoll");
@@ -513,7 +513,7 @@ int main(int argc, char *argv[])
 				network.bssid[3], network.bssid[4], network.bssid[5]);
 
 			if ((strncmp(ssid, (char*)&network.ssid, network.ssidLength)!=0) || !networkConfigSent) {
-				
+
 				memset(ssid, 0, 128);
 				strncpy(ssid, network.ssid, network.ssidLength);
 				Log_Debug("SSID: %s\n", ssid);
@@ -522,12 +522,12 @@ int main(int argc, char *argv[])
 				networkConfigSent = true;
 
 #if (defined(IOT_CENTRAL_APPLICATION) || defined(IOT_HUB_APPLICATION))
-				// Note that we send up this data to Azure if it changes, but the IoT Central Properties elements only 
+				// Note that we send up this data to Azure if it changes, but the IoT Central Properties elements only
 				// show the data that was currenet when the device first connected to Azure.
 				checkAndUpdateDeviceTwin("ssid", &ssid, TYPE_STRING, false);
 				checkAndUpdateDeviceTwin("freq", &frequency, TYPE_INT, false);
 				checkAndUpdateDeviceTwin("bssid", &bssid, TYPE_STRING, false);
-#endif 
+#endif
 			}
 
 			//// OLED
@@ -545,7 +545,8 @@ int main(int argc, char *argv[])
 			network_data.frequency_MHz = network.frequencyMHz;
 
 			network_data.rssi = network.signalRssi;
-		}	   		 	  	  	   	
+		}
+
 #if (defined(IOT_CENTRAL_APPLICATION) || defined(IOT_HUB_APPLICATION))
 		if (iothubClientHandle != NULL && !versionStringSent) {
 

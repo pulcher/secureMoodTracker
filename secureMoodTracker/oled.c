@@ -30,6 +30,7 @@ extern uint8_t oled_ms4[CLOUD_MSG_SIZE];
 extern uint8_t RTCore_status;
 extern uint8_t lsm6dso_status;
 extern uint8_t lps22hh_status;
+extern uint8_t mcp23x17_status;
 
 /**
   * @brief  OLED initialization.
@@ -48,12 +49,12 @@ void update_oled()
 	{
 		case 0:
 		{
-			oled_i2c_bus_status(3);
+			oled_i2c_bus_status(4);
 		}
 		break;
 		case 1:
 		{
-			update_network();	
+			update_network();
 		}
 		break;
 		case 2:
@@ -86,7 +87,7 @@ void update_oled()
 		break;
 		case 6:
 		{
-			update_other(light_sensor, 0, 0); 
+			update_other(light_sensor, 0, 0);
 		}
 		break;
 		case 7:
@@ -113,6 +114,7 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 	uint8_t str_bus_sta[]   = "I2C Bus Status:";
 	uint8_t str_lsmod_sta[] = "LSM6DSO Accel.:";
 	uint8_t str_lps22_sta[] = "LPS22HH Barom.:";
+	uint8_t str_mcp23x17_sta[] = "MCP23X17 GPIO.:";
 	uint8_t str_rtcore_sta[] = "Real Time Core:";
 
 	switch (sensor_number)
@@ -166,6 +168,22 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 		break;
 		case 3:
 		{
+			// Draw a label at line 3
+			sd1306_draw_string(OLED_LINE_4_X, OLED_LINE_4_Y, str_mcp23x17_sta, FONT_SIZE_LINE, white_pixel);
+
+			// Show mcp23017 status
+			if (mcp23x17_status == 0)
+			{
+				sd1306_draw_string(sizeof(str_mcp23x17_sta) * 6, OLED_LINE_4_Y, "OK", FONT_SIZE_LINE, white_pixel);
+			}
+			else
+			{
+				sd1306_draw_string(sizeof(str_mcp23x17_sta) * 6, OLED_LINE_4_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
+			}
+		}
+		break;
+		case 4:
+		{
 			// If we are here I2C is working well
 
 			// Clear OLED buffer
@@ -205,7 +223,7 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			{
 				sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
 			}
-			
+
 			// Draw a label at line 4
 			sd1306_draw_string(OLED_LINE_4_X, OLED_LINE_4_Y, str_rtcore_sta, FONT_SIZE_LINE, white_pixel);
 
@@ -266,7 +284,7 @@ void update_network()
 	uint8_t string_data[10];
 	uint16_t channel;
 	uint8_t aux_size;
-	
+
 	// Strings for labels
 	uint8_t str_SSID[] = "SSID:";
 	uint8_t str_freq[] = "Freq:";
@@ -430,7 +448,7 @@ void update_angular_rate(float x, float y, float z)
 	sd1306_draw_string(sizeof(str_gy) * 6, OLED_LINE_2_Y, string_data, FONT_SIZE_LINE, white_pixel);
 	// Draw the units of y
 	sd1306_draw_string(sizeof(str_gy) * 6 + (get_str_size(string_data) + 1) * 6, OLED_LINE_2_Y, "dps", FONT_SIZE_LINE, white_pixel);
-	
+
 	// Convert z value to string
 	ftoa(z, string_data, 2);
 
@@ -456,7 +474,7 @@ void update_environ(float temp1, float temp2, float atm)
 {
 	uint32_t i;
 	uint8_t string_data[10];
-	
+
 	// Strings for labels
 	uint8_t str_temp1[] = "Temp1:";
 	uint8_t str_temp2[] = "Temp2:";
@@ -584,7 +602,7 @@ void oled_draw_logo(void)
 	sd1306_refresh();
 }
 
-// reverses a string 'str' of length 'len' 
+// reverses a string 'str' of length 'len'
 static void reverse(uint8_t *str, int32_t len)
 {
 	int32_t i = 0;
@@ -623,8 +641,8 @@ int32_t intToStr(int32_t x, uint8_t str[], int32_t d)
 		x = x / 10;
 	}
 
-	// If number of digits required is more, then 
-	// add 0s at the beginning 
+	// If number of digits required is more, then
+	// add 0s at the beginning
 	while (i < d)
 	{
 		str[i++] = '0';
@@ -650,10 +668,10 @@ int32_t intToStr(int32_t x, uint8_t str[], int32_t d)
   */
 void ftoa(float n, uint8_t *res, int32_t afterpoint)
 {
-	// Extract integer part 
+	// Extract integer part
 	int32_t ipart = (int32_t)n;
 
-	// Extract floating part 
+	// Extract floating part
 	float fpart = n - (float)ipart;
 
 	int32_t i;
@@ -676,17 +694,17 @@ void ftoa(float n, uint8_t *res, int32_t afterpoint)
 		}
 	}
 
-	// convert integer part to string 
+	// convert integer part to string
 	i = intToStr(ipart, res, 1);
 
-	// check for display option after point 
+	// check for display option after point
 	if (afterpoint != 0)
 	{
-		res[i] = '.';  // add dot 
+		res[i] = '.';  // add dot
 
-		// Get the value of fraction part upto given no. 
-		// of points after dot. The third parameter is needed 
-		// to handle cases like 233.007 
+		// Get the value of fraction part upto given no.
+		// of points after dot. The third parameter is needed
+		// to handle cases like 233.007
 		fpart = fpart * pow(10, afterpoint);
 
 		intToStr((int32_t)fpart, res + i + 1, afterpoint);

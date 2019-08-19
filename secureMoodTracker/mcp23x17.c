@@ -162,6 +162,57 @@ int32_t mcp23x17_write_data(uint8_t addr, uint8_t *data)
 //	return 0;
 //}
 
+/**
+  * @brief  DeviceWhoamI[get]
+  *
+  * @param  ctx      read / write interface definitions
+  * @param  buff     buffer that stores data read
+  * @retval          interface status (MANDATORY: return 0 -> no Error)
+  *
+  */
+int32_t mcp23x17_device_id_get(mcp23x17_ctx_t* ctx, uint8_t* buff)
+{
+	int32_t ret;
+	ret = mcp23x17_read_reg(ctx, MCP23X17_WHO_AM_I, buff, 1);
+	return ret;
+}
+
+/**
+  * @brief  Read generic device register
+  *
+  * @param  ctx   read / write interface definitions(ptr)
+  * @param  reg   register to read
+  * @param  data  pointer to buffer that store the data read(ptr)
+  * @param  len   number of consecutive register to read
+  * @retval       interface status (MANDATORY: return 0 -> no Error)
+  *
+  */
+int32_t mcp23x17_read_reg(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data,
+	uint16_t len)
+{
+	int32_t ret;
+	ret = ctx->read_reg(ctx->handle, reg, data, len);
+	return ret;
+}
+
+/**
+  * @brief  Write generic device register
+  *
+  * @param  ctx   read / write interface definitions(ptr)
+  * @param  reg   register to write
+  * @param  data  pointer to data to write in register reg(ptr)
+  * @param  len   number of consecutive register to write
+  * @retval       interface status (MANDATORY: return 0 -> no Error)
+  *
+  */
+int32_t mcp23x17_write_reg(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data,
+	uint16_t len)
+{
+	int32_t ret;
+	ret = ctx->write_reg(ctx->handle, reg, data, len);
+	return ret;
+}
+
 uint8_t mcp23x17_init(uint8_t addr)
 {
 	mcp23x17_addr = addr;
