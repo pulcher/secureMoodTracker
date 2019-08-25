@@ -95,7 +95,8 @@ static int32_t lsm6dso_write_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, u
 static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, uint16_t len);
 
 // Routines to read/write to the MCP23X17 device connected to I2C
-static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint8_t len);
+static uint8_t mcp23x17_read_cx(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data, uint8_t len);
+static uint8_t mcp23x17_write_cx(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data, uint8_t len);
 
 /// <summary>
 ///     Sleep for delayTime ms
@@ -398,17 +399,13 @@ int initI2c(void) {
 		// MCP23x17 specific init
 		// Initialize MCP23X17 interface
 		mcp23x17_ctx.read_reg = mcp23x17_read_cx;
-		//mcp23x17_ctx.write_reg = mcp23x17_write_cx;
+		mcp23x17_ctx.write_reg = mcp23x17_write_cx;
 		mcp23x17_ctx.handle = &i2cFd;
 
 		bool mcp23x17Detected = false;
 		int failCount = 10;
 
 		while (!mcp23x17Detected) {
-
-			// Enable pull up on master I2C interface.
-			//mcp23x17Detected_sh_pin_mode_set(&dev_ctx, LSM6DSO_INTERNAL_PULL_UP);
-
 			// Check if mcp23x17Detected is connected
 			mcp23x17_device_id_get(&mcp23x17_ctx, &whoamI);
 			if (whoamI != MCP23X17_DEFAULT_HIGH) {
@@ -428,17 +425,16 @@ int initI2c(void) {
 				oled_i2c_bus_status(3);
 			}
 
-			//// Restore the default configuration
-			//lps22hh_reset_set(&pressure_ctx, PROPERTY_ENABLE);
-			//do {
-			//	lps22hh_reset_get(&pressure_ctx, &rst);
-			//} while (rst);
+			// Initiallize the PortA for output and the PortB for Input(default)
+			mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_IODIRA, 0x00, 1);
 
-			//// Enable Block Data Update
-			//lps22hh_block_data_update_set(&pressure_ctx, PROPERTY_ENABLE);
+			uint8_t testRead = 0xffU;
 
-			////Set Output Data Rate
-			//lps22hh_data_rate_set(&pressure_ctx, LPS22HH_10_Hz_LOW_NOISE);
+			uint8_t test = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_IODIRA, &testRead, 1);
+
+			if (test != 0x00) {
+				Log_Debug("Failed to setup PortA for output");
+			}
 
 			// If we failed to detect the mcp23x17Detected device, then pause before trying again.
 			if (!mcp23x17Detected) {
@@ -758,15 +754,15 @@ static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, ui
  * @param  len       number of consecutive register to read
  *
  */
-static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint8_t len)
+static uint8_t mcp23x17_read_cx(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data, uint8_t len)
 {
 	uint8_t ret;
-	uint8_t drdy;
-	uint8_t sendData[len];
-	uint8_t recvData[len];
+	int test = *((int*)ctx->handle);
 
 	// Send the data by I2C bus
-	ret = I2CMaster_WriteThenRead(i2cFd, mcp23x17_DEFAULT_ADDR, &reg, len, data, len);
+	ret = I2CMaster_Write(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR, reg, len);
+	ret = I2CMaster_Read(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR, data, len);
+	//ret = I2CMaster_WriteThenRead(*((int *)ctx->handle), mcp23x17_DEFAULT_ADDR, &reg, len, data, len);
 
 #ifdef ENABLE_READ_WRITE_DEBUG
 		Log_Debug("Read %d bytes: ", len);
@@ -779,3 +775,63 @@ static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint8_t le
 	return ret;
 }
 
+/*
+ * @brief  Write mcp23x17 device register
+ *
+ * @param  handle    customizable argument. In this examples is used in
+ *                   order to select the correct sensor bus handler.
+ * @param  reg       register to write
+ * @param  bufp      pointer to data to write in register reg
+ * @param  len       number of consecutive register to write
+ *
+ */
+static uint8_t mcp23x17_write_cx(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data, uint8_t len)
+{
+	uint8_t ret;
+	uint8_t regRet;
+
+	// Read data by I2C bus
+	regRet = I2CMaster_Write(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR, &reg, len);
+	ret = I2CMaster_Write(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR, &data, len);
+
+	return ret;
+
+	//uint8_t drdy;
+	//lsm6dso_status_master_t master_status;
+	//lsm6dso_sh_cfg_write_t sh_cfg_write;
+
+	//// Configure Sensor Hub to write to the LPS22HH, and send the write data
+	//sh_cfg_write.slv0_add = (LPS22HH_I2C_ADD_L & 0xFEU) >> 1; // 7bit I2C address
+	//sh_cfg_write.slv0_subadd = reg,
+	//	sh_cfg_write.slv0_data = *data,
+	//	ret = lsm6dso_sh_cfg_write(&dev_ctx, &sh_cfg_write);
+
+	///* Disable accelerometer. */
+	//lsm6dso_xl_data_rate_set(&dev_ctx, LSM6DSO_XL_ODR_OFF);
+
+	///* Enable I2C Master. */
+	//lsm6dso_sh_master_set(&dev_ctx, PROPERTY_ENABLE);
+
+	///* Enable accelerometer to trigger Sensor Hub operation. */
+	//lsm6dso_xl_data_rate_set(&dev_ctx, LSM6DSO_XL_ODR_104Hz);
+
+	///* Wait Sensor Hub operation flag set. */
+	//lsm6dso_acceleration_raw_get(&dev_ctx, data_raw_acceleration.u8bit);
+	//do
+	//{
+	//	HAL_Delay(20);
+	//	lsm6dso_xl_flag_data_ready_get(&dev_ctx, &drdy);
+	//} while (!drdy);
+
+	//do
+	//{
+	//	HAL_Delay(20);
+	//	lsm6dso_sh_status_get(&dev_ctx, &master_status);
+	//} while (!master_status.sens_hub_endop);
+
+	///* Disable I2C master and XL (trigger). */
+	//lsm6dso_sh_master_set(&dev_ctx, PROPERTY_DISABLE);
+	//lsm6dso_xl_data_rate_set(&dev_ctx, LSM6DSO_XL_ODR_OFF);
+
+	return ret;
+}
