@@ -95,7 +95,7 @@ static int32_t lsm6dso_write_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, u
 static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, uint16_t len);
 
 // Routines to read/write to the MCP23X17 device connected to I2C
-static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint16_t len);
+static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint8_t len);
 
 /// <summary>
 ///     Sleep for delayTime ms
@@ -411,7 +411,7 @@ int initI2c(void) {
 
 			// Check if mcp23x17Detected is connected
 			mcp23x17_device_id_get(&mcp23x17_ctx, &whoamI);
-			if (whoamI != mcp23x17_DEFAULT_ADDR) {
+			if (whoamI != MCP23X17_DEFAULT_HIGH) {
 				Log_Debug("MCP23x17 not found!\n");
 
 				// OLED update
@@ -758,15 +758,15 @@ static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, ui
  * @param  len       number of consecutive register to read
  *
  */
-static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint16_t len)
+static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint8_t len)
 {
-	int32_t ret;
+	uint8_t ret;
 	uint8_t drdy;
 	uint8_t sendData[len];
 	uint8_t recvData[len];
 
 	// Send the data by I2C bus
-	ssize_t result = I2CMaster_WriteThenRead(i2cFd, mcp23x17_DEFAULT_ADDR, sendData, 64, recvData, 64);
+	ret = I2CMaster_WriteThenRead(i2cFd, mcp23x17_DEFAULT_ADDR, &reg, len, data, len);
 
 #ifdef ENABLE_READ_WRITE_DEBUG
 		Log_Debug("Read %d bytes: ", len);
@@ -776,6 +776,6 @@ static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint16_t l
 		Log_Debug("\n", len);
 #endif
 
-	return recvData[0];
+	return ret;
 }
 

@@ -43,7 +43,9 @@
 
 #define BUFFER_SIZE 128/8
 
-#define MCP23X17_WHO_AM_I 0x0FU
+#define MCP23X17_WHO_AM_I 0x00U
+#define MCP23X17_DEFAULT_HIGH 0xffU
+
 // TODO: look this up.  seems a way to ask a device for its id?
 
 /**
