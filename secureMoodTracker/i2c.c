@@ -69,6 +69,7 @@ static int accelTimerFd = -1;
 const uint8_t lsm6dsOAddress = LSM6DSO_ADDRESS;     // Addr = 0x6A
 lsm6dso_ctx_t dev_ctx;
 lps22hh_ctx_t pressure_ctx;
+mcp23x17_ctx_t mcp23x17_ctx;
 
 float altitude;
 
@@ -92,6 +93,9 @@ static int32_t platform_read(int *fD, uint8_t reg, uint8_t *bufp, uint16_t len);
 // Routines to read/write to the LPS22HH device connected to the LSM6DSO sensor hub
 static int32_t lsm6dso_write_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, uint16_t len);
 static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, uint16_t len);
+
+// Routines to read/write to the MCP23X17 device connected to I2C
+static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint16_t len);
 
 /// <summary>
 ///     Sleep for delayTime ms
@@ -390,6 +394,13 @@ int initI2c(void) {
 			return -1;
 		}
 
+
+		// MCP23x17 specific init
+		// Initialize MCP23X17 interface
+		mcp23x17_ctx.read_reg = mcp23x17_read_cx;
+		//mcp23x17_ctx.write_reg = mcp23x17_write_cx;
+		mcp23x17_ctx.handle = &i2cFd;
+
 		bool mcp23x17Detected = false;
 		int failCount = 10;
 
@@ -399,7 +410,7 @@ int initI2c(void) {
 			//mcp23x17Detected_sh_pin_mode_set(&dev_ctx, LSM6DSO_INTERNAL_PULL_UP);
 
 			// Check if mcp23x17Detected is connected
-			mcp23x17_device_id_get(&pressure_ctx, &whoamI);
+			mcp23x17_device_id_get(&mcp23x17_ctx, &whoamI);
 			if (whoamI != mcp23x17_DEFAULT_ADDR) {
 				Log_Debug("MCP23x17 not found!\n");
 
@@ -735,5 +746,36 @@ static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, ui
 	lsm6dso_xl_data_rate_set(&dev_ctx, LSM6DSO_XL_ODR_104Hz);
 
 	return ret;
+}
+
+/*
+ * @brief  Read lsm2mdl device register (used by configuration functions)
+ *
+ * @param  handle    customizable argument. In this examples is used in
+ *                   order to select the correct sensor bus handler.
+ * @param  reg       register to read
+ * @param  bufp      pointer to buffer that store the data read
+ * @param  len       number of consecutive register to read
+ *
+ */
+static int8_t mcp23x17_read_cx(void* ctx, uint8_t reg, uint8_t* data, uint16_t len)
+{
+	int32_t ret;
+	uint8_t drdy;
+	uint8_t sendData[len];
+	uint8_t recvData[len];
+
+	// Send the data by I2C bus
+	ssize_t result = I2CMaster_WriteThenRead(i2cFd, mcp23x17_DEFAULT_ADDR, sendData, 64, recvData, 64);
+
+#ifdef ENABLE_READ_WRITE_DEBUG
+		Log_Debug("Read %d bytes: ", len);
+		for (int i = 0; i < len; i++) {
+			Log_Debug("[%0x] ", data[i]);
+		}
+		Log_Debug("\n", len);
+#endif
+
+	return recvData[0];
 }
 

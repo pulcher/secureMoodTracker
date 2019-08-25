@@ -76,6 +76,25 @@ int32_t mcp23x17_write_data(uint8_t addr, uint8_t *data)
 }
 
 /**
+ * Register address, port dependent, for a given PIN
+ */
+uint8_t mcp23x17_regForPin(uint8_t pin, uint8_t portAaddr, uint8_t portBaddr) {
+	return(pin < 8) ? portAaddr : portBaddr;
+}
+
+///**
+// * Reads a given register
+// */
+//uint8_t mcp23x17_readRegister(uint8_t addr) {
+//	// read the current GPINTEN
+//	Wire.beginTransmission(mcp23x17_DEFAULT_ADDR | mcp23x17_addr);
+//	wiresend(addr);
+//	Wire.endTransmission();
+//	Wire.requestFrom(mcp23x17_DEFAULT_ADDR | mcp23x17_addr, 1);
+//	return wirerecv();
+//}
+
+/**
   * @brief  Initialize mcp23x17.
   * @param  None.
   * @retval Positive if was unsuccefully, zero if was succefully.

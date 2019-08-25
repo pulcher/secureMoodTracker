@@ -29,4 +29,4 @@
 #define ACCEL_READ_PERIOD_NANO_SECONDS 0
 
 // Enables I2C read/write debug
-//#define ENABLE_READ_WRITE_DEBUG
+#define ENABLE_READ_WRITE_DEBUG
