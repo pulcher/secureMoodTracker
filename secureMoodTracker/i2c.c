@@ -426,13 +426,14 @@ int initI2c(void) {
 			}
 
 			// Initiallize the PortA for output and the PortB for Input(default)
-			mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_IODIRA, 0x00, 1);
+			uint8_t setOuputBank = 0x00U;
+			mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_IODIRB, &setOuputBank, 1);
 
 			uint8_t testRead = 0xffU;
 
-			uint8_t test = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_IODIRA, &testRead, 1);
+			uint8_t test = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_IODIRB, &testRead, 1);
 
-			if (test != 0x00) {
+			if (testRead != 0x00) {
 				Log_Debug("Failed to setup PortA for output");
 			}
 
@@ -445,6 +446,13 @@ int initI2c(void) {
 				Log_Debug("Failed to read LSM22HH device ID, exiting\n");
 				return -1;
 			}
+
+			// testing an led to light up
+			uint8_t testOutput = 0x55U;
+
+			ssize_t writeRet = mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_GPIOB, &testOutput, 1);
+
+			uint8_t readRet = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_GPIOB, &testRead, 1);
 		}
 	}
 
@@ -756,13 +764,16 @@ static int32_t lsm6dso_read_lps22hh_cx(void* ctx, uint8_t reg, uint8_t* data, ui
  */
 static uint8_t mcp23x17_read_cx(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data, uint8_t len)
 {
-	uint8_t ret;
+	ssize_t ret;
 	int test = *((int*)ctx->handle);
+	const uint8_t command[] = { reg, data };
 
 	// Send the data by I2C bus
-	ret = I2CMaster_Write(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR, reg, len);
-	ret = I2CMaster_Read(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR, data, len);
-	//ret = I2CMaster_WriteThenRead(*((int *)ctx->handle), mcp23x17_DEFAULT_ADDR, &reg, len, data, len);
+	// tried todo this the applibs way instead of the posix way.  I am sure I missed a memo....
+	int targetSet = I2CMaster_SetDefaultTargetAddress(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR);
+	int targetRegisterWrite = write(*((int*)ctx->handle), &reg, len);
+	ssize_t readRet = read(*((int*)ctx->handle), data, len);
+	ret = readRet;
 
 #ifdef ENABLE_READ_WRITE_DEBUG
 		Log_Debug("Read %d bytes: ", len);
@@ -787,51 +798,10 @@ static uint8_t mcp23x17_read_cx(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data,
  */
 static uint8_t mcp23x17_write_cx(mcp23x17_ctx_t* ctx, uint8_t reg, uint8_t* data, uint8_t len)
 {
-	uint8_t ret;
-	uint8_t regRet;
+	ssize_t ret;
+	const uint8_t command[] = { reg, *data };
 
-	// Read data by I2C bus
-	regRet = I2CMaster_Write(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR, &reg, len);
-	ret = I2CMaster_Write(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR, &data, len);
-
-	return ret;
-
-	//uint8_t drdy;
-	//lsm6dso_status_master_t master_status;
-	//lsm6dso_sh_cfg_write_t sh_cfg_write;
-
-	//// Configure Sensor Hub to write to the LPS22HH, and send the write data
-	//sh_cfg_write.slv0_add = (LPS22HH_I2C_ADD_L & 0xFEU) >> 1; // 7bit I2C address
-	//sh_cfg_write.slv0_subadd = reg,
-	//	sh_cfg_write.slv0_data = *data,
-	//	ret = lsm6dso_sh_cfg_write(&dev_ctx, &sh_cfg_write);
-
-	///* Disable accelerometer. */
-	//lsm6dso_xl_data_rate_set(&dev_ctx, LSM6DSO_XL_ODR_OFF);
-
-	///* Enable I2C Master. */
-	//lsm6dso_sh_master_set(&dev_ctx, PROPERTY_ENABLE);
-
-	///* Enable accelerometer to trigger Sensor Hub operation. */
-	//lsm6dso_xl_data_rate_set(&dev_ctx, LSM6DSO_XL_ODR_104Hz);
-
-	///* Wait Sensor Hub operation flag set. */
-	//lsm6dso_acceleration_raw_get(&dev_ctx, data_raw_acceleration.u8bit);
-	//do
-	//{
-	//	HAL_Delay(20);
-	//	lsm6dso_xl_flag_data_ready_get(&dev_ctx, &drdy);
-	//} while (!drdy);
-
-	//do
-	//{
-	//	HAL_Delay(20);
-	//	lsm6dso_sh_status_get(&dev_ctx, &master_status);
-	//} while (!master_status.sens_hub_endop);
-
-	///* Disable I2C master and XL (trigger). */
-	//lsm6dso_sh_master_set(&dev_ctx, PROPERTY_DISABLE);
-	//lsm6dso_xl_data_rate_set(&dev_ctx, LSM6DSO_XL_ODR_OFF);
+	ret = I2CMaster_Write(*((int*)ctx->handle), mcp23x17_DEFAULT_ADDR, command, sizeof(command));
 
 	return ret;
 }
