@@ -1,7 +1,7 @@
 {
   "SchemaVersion": 1,
   "Name": "secure_mt",
-  "ComponentId": "c7d28de6-99e9-4045-aca2-3d0e15888788",
+  "ComponentId": "819255ff-8640-41fd-aea7-f85d34c491d5",
   "EntryPoint": "/bin/app",
   "CmdArgs": [ "0ne000740D2" ],
   "Capabilities": {

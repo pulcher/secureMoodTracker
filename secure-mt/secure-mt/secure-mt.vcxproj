@@ -59,6 +59,9 @@
     <Link>
       <LibraryDependencies>applibs;pthread;gcc_s;c</LibraryDependencies>
       <AdditionalOptions>-Wl,--no-undefined -nodefaultlibs %(AdditionalOptions)</AdditionalOptions>
+      <VerboseOutput Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</VerboseOutput>
+      <AdditionalLibraryDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">.\secure-mt\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">-lm;-lazureiot;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>

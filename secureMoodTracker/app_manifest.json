@@ -1,14 +1,15 @@
 {
   "SchemaVersion": 1,
   "Name": "Secure Mood Tracker",
-  "ComponentId": "685f13af-25a5-40b2-8dd8-8cbc253ecbd8",
+  "ComponentId": "819255ff-8640-41fd-aea7-f85d34c491d5",
   "EntryPoint": "/bin/app",
-  "CmdArgs": [ "Secure-Mood-Tracker" ],
+  "CmdArgs": [ "0ne000740D2" ],
   "Capabilities": {
     //// M4 application connection (Replace the xxxx placeholder with your M4 application's ComponentID)
-    "AllowedApplicationConnections": [  ],
+    "AllowedApplicationConnections": [],
     //// IoT Central application connection (Replace the xxxx placeholder with your IOTC application's ComponentID)
-    "AllowedConnections": [  ],
+    "AllowedConnections": [ "global.azure-devices-provisioning.net", "iotc-ea758c6a-7653-4553-ada5-6ad55b7c229d.azure-devices.net" ],
+    "DeviceAuthentication": "38b9bba9-94a9-4e47-ae9e-f711ce7ef15b",
     "AllowedTcpServerPorts": [],
     "AllowedUdpServerPorts": [],
     "Gpio": [ 0, 4, 5, 8, 9, 10, 12, 13, 34, 1 ],
