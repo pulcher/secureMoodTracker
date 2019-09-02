@@ -25,7 +25,7 @@
 
 #include "connection_strings.h"
 
-static const char connectionString[] = MY_CONNECTION_STRING;
+static const char connectionString[] = "HostName=iotc-ea758c6a-7653-4553-ada5-6ad55b7c229d.azure-devices.net;DeviceId=22d7fc3c-247c-42c8-8923-86990eae1f33;SharedAccessKey=kR2Kfs/ZwuDP1hohd/3l09bN5trf7HrhVg7zk7vSdA4=";
 
 /// <summary>
 ///     Maximum amount of time to attempt reconnection when the connection to the IoT Hub drops.
@@ -668,7 +668,7 @@ void AzureIoT_Deinitialize(void)
 }
 /// <summary>
 ///     Creates and enqueues reported properties state using a prepared json string.
-///     The report is not actually sent immediately, but it is sent on the next 
+///     The report is not actually sent immediately, but it is sent on the next
 ///     invocation of AzureIoT_DoPeriodicTasks().
 /// </summary>
 void AzureIoT_TwinReportStateJson(

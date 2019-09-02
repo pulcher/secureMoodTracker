@@ -224,17 +224,17 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 				sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
 			}
 
-			// Draw a label at line 4
-			sd1306_draw_string(OLED_LINE_4_X, OLED_LINE_4_Y, str_rtcore_sta, FONT_SIZE_LINE, white_pixel);
+			// Draw a label at line 5
+			sd1306_draw_string(OLED_LINE_5_X, OLED_LINE_5_Y, str_rtcore_sta, FONT_SIZE_LINE, white_pixel);
 
 			// Show RTcore status
 			if ( RTCore_status == 0)
 			{
-				sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_4_Y, "OK", FONT_SIZE_LINE, white_pixel);
+				sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_5_Y, "OK", FONT_SIZE_LINE, white_pixel);
 			}
 			else
 			{
-				sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_4_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
+				sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_5_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
 			}
 		}
 		break;

@@ -14,7 +14,7 @@
 #define OLED_NUM_SCREEN 7
 
 #define OLED_TITLE_X      0
-#define OLED_TITLE_Y      0 
+#define OLED_TITLE_Y      0
 #define OLED_RECT_TITLE_X 0
 #define OLED_RECT_TITLE_Y 0
 #define OLED_RECT_TITLE_W 127
@@ -32,6 +32,9 @@
 
 #define OLED_LINE_4_X     0
 #define OLED_LINE_4_Y     46
+
+#define OLED_LINE_5_X     0
+#define OLED_LINE_5_Y     56
 
 #define FONT_SIZE_TITLE   2
 #define FONT_SIZE_LINE    1

@@ -21,7 +21,7 @@
     <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
     <DebugMachineType>Device</DebugMachineType>
     <PlatformToolset>GCC_AzureSphere_1_0</PlatformToolset>
-    <ProjectName>secureMoodTracker</ProjectName>
+    <ProjectName>secureMoodTrackerReference</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">

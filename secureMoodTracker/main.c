@@ -36,13 +36,13 @@
 
    *************************************************************************************************/
 
-// TODO: update all of these comments when I get something working. 
+// TODO: update all of these comments when I get something working.
 
 #include <errno.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <string.h> 
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -166,7 +166,7 @@ static void ButtonTimerEventHandler(EventData *eventData)
 		else {
 			Log_Debug("Button A released!\n");
 		}
-		
+
 		// Update the static variable to use next time we enter this routine
 		buttonAState = newButtonAState;
 	}
@@ -207,7 +207,7 @@ static void ButtonTimerEventHandler(EventData *eventData)
 
 
 	}
-	
+
 	// If either button was pressed, then enter the code to send the telemetry message
 	if (sendTelemetryButtonA || sendTelemetryButtonB) {
 
@@ -276,7 +276,7 @@ static void SocketEventHandler(EventData *eventData)
 
 	Log_Debug("Received %d bytes. ", bytesReceived);
 
-	Log_Debug("\n");	
+	Log_Debug("\n");
 }
 
 /// <summary>
@@ -332,10 +332,10 @@ static int InitPeripheralsAndHandlers(void)
     }
 
 	//// ADC connection
-	 	
+
 	// Open connection to real-time capable application.
 	sockFd = Application_Socket(rtAppComponentId);
-	if (sockFd == -1) 
+	if (sockFd == -1)
 	{
 		Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
 		Log_Debug("Real Time Core disabled or Component Id is not correct.\n");
@@ -375,11 +375,11 @@ static int InitPeripheralsAndHandlers(void)
 
 	//// end ADC Connection
 
-	
+
 	if (initI2c() == -1) {
 		return -1;
 	}
-	
+
 	// Traverse the twin Array and for each GPIO item in the list open the file descriptor
 	for (int i = 0; i < twinArraySize; i++) {
 
@@ -414,7 +414,7 @@ static int InitPeripheralsAndHandlers(void)
 	}
 
 	// Set up a timer to poll the buttons
-	
+
 	struct timespec buttonPressCheckPeriod = { 0, 1000000 };
 	buttonPollTimerFd =
 		CreateTimerFdAndAddToEpoll(epollFd, &buttonPressCheckPeriod, &buttonEventData, EPOLLIN);
@@ -462,13 +462,13 @@ int main(int argc, char *argv[])
 	char ssid[128];
 	uint32_t frequency;
 	char bssid[20];
-	
+
 	// Clear the ssid array
 	memset(ssid, 0, 128);
 
 	//Log_Debug("Version String: %s\n", argv[1]);
 	Log_Debug("Secure Mood Tracker Application starting.\n");
-	
+
     if (InitPeripheralsAndHandlers() != 0) {
         terminationRequired = true;
     }
@@ -489,12 +489,12 @@ int main(int argc, char *argv[])
 			Log_Debug("ERROR: Failed to set up IoT Hub client\n");
 			break;
 		}
-#endif 
+#endif
 
 		WifiConfig_ConnectedNetwork network;
 		int result = WifiConfig_GetCurrentNetwork(&network);
 
-		if (result < 0) 
+		if (result < 0)
 		{
 			// Log_Debug("INFO: Not currently connected to a WiFi network.\n");
 			//// OLED
@@ -504,12 +504,12 @@ int main(int argc, char *argv[])
 
 			network_data.rssi = 0;
 		}
-		else 
+		else
 		{
 
 			frequency = network.frequencyMHz;
 			snprintf(bssid, JSON_BUFFER_SIZE, "%02x:%02x:%02x:%02x:%02x:%02x",
-				network.bssid[0], network.bssid[1], network.bssid[2], 
+				network.bssid[0], network.bssid[1], network.bssid[2],
 				network.bssid[3], network.bssid[4], network.bssid[5]);
 
 			if ((strncmp(ssid, (char*)&network.ssid, network.ssidLength)!=0) || !networkConfigSent) {
