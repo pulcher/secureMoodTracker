@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29215.179
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "secure-mt", "secure-mt\secure-mt.vcxproj", "{E679E3CA-F922-4274-8862-CFE2727ACF2B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E679E3CA-F922-4274-8862-CFE2727ACF2B}.Debug|ARM.ActiveCfg = Debug|ARM
+		{E679E3CA-F922-4274-8862-CFE2727ACF2B}.Debug|ARM.Build.0 = Debug|ARM
+		{E679E3CA-F922-4274-8862-CFE2727ACF2B}.Release|ARM.ActiveCfg = Release|ARM
+		{E679E3CA-F922-4274-8862-CFE2727ACF2B}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {135E8F13-A709-4E31-A29A-CC6FE9B1AAC9}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,14 @@
+{
+  "SchemaVersion": 1,
+  "Name" : "secure_mt",
+  "ComponentId" : "c7d28de6-99e9-4045-aca2-3d0e15888788",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedConnections": [],
+    "Gpio": [ 9 ],
+    "Uart": [],
+    "WifiConfig": false
+  },
+  "ApplicationType":"Default"
+}
