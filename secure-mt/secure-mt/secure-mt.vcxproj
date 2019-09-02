@@ -36,6 +36,11 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <TargetHardwareDirectory>..\..\Hardware\mt3620_rdb</TargetHardwareDirectory>
+    <TargetHardwareDefinition>sample_hardware.json</TargetHardwareDefinition>
+    <IncludePath>$(SysRoot)\usr\include\azureiot;$(TargetHardwareDirectory)\inc;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="main.c" />
     <UpToDateCheckInput Include="app_manifest.json" />
