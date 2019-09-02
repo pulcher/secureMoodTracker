@@ -12,7 +12,10 @@
 #include <applibs/networking.h>
 #include <applibs/storage.h>
 
-//#include <hw/sample_hardware.h>
+#include <hw/sample_hardware.h>
+
+// Polling helpers
+#include "epoll_timerfd_utilities.h"
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
@@ -22,9 +25,22 @@
 #include <iothub.h>
 #include <azure_sphere_provisioning.h>
 
+static volatile sig_atomic_t terminationRequired = false;
+
+// Azure IoT Hub/Central variables
+
+// Timer / polling
+static int buttonPollTimerFd = -1;
+static int azureTimerFd = -1;
+static int epollFd = -1;
+
 
 int main(void)
 {
-    while (true) {
-    }
+	// Main loop
+	while (!terminationRequired) {
+		if (WaitForEventAndCallHandler(epollFd) != 0) {
+			terminationRequired = true;
+		}
+	}
 }

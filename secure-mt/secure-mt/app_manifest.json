@@ -1,14 +1,18 @@
 {
   "SchemaVersion": 1,
-  "Name" : "secure_mt",
-  "ComponentId" : "c7d28de6-99e9-4045-aca2-3d0e15888788",
+  "Name": "secure_mt",
+  "ComponentId": "c7d28de6-99e9-4045-aca2-3d0e15888788",
   "EntryPoint": "/bin/app",
-  "CmdArgs": [],
+  "CmdArgs": [ "0ne000740D2" ],
   "Capabilities": {
-    "AllowedConnections": [],
-    "Gpio": [ 9 ],
+    "AllowedConnections": [ "global.azure-devices-provisioning.net", "iotc-ea758c6a-7653-4553-ada5-6ad55b7c229d.azure-devices.net" ],
+    "DeviceAuthentication": "38b9bba9-94a9-4e47-ae9e-f711ce7ef15b",
+    "Gpio": [ "$SAMPLE_RGBLED_GREEN" ],
+    "I2cMaster": [ "$SAMPLE_LSM6DS3_I2C" ],
     "Uart": [],
-    "WifiConfig": false
+    "WifiConfig": true,
+    "NetworkConfig": true,
+    "SystemTime": false
   },
-  "ApplicationType":"Default"
+  "ApplicationType": "Default"
 }
