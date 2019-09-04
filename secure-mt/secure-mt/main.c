@@ -17,6 +17,9 @@
 // Polling helpers
 #include "epoll_timerfd_utilities.h"
 
+// I2C connected sensors/modules
+#include "i2c.h";
+
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
 #include <iothub_device_client_ll.h>
@@ -107,7 +110,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	//ClosePeripheralsAndHandlers();
+	ClosePeripheralsAndHandlers();
 
 	Log_Debug("Application exiting.\n");
 
@@ -153,6 +156,31 @@ static int InitPeripheralsAndHandlers(void)
 	if (buttonPollTimerFd < 0) {
 		return -1;
 	}
+
+	// initialize the I2C master
+	// - need pull ups?
+	// - need status indicators for guard code
+	initI2c();
+	if (i2cFd < 0) {
+		Log_Debug("ERROR: Could not open I2C master: %s (%d).\n", strerror(errno), errno);
+		return -1;
+	}
+
+	// initialize the MCP23017
+	// - Port A input from buttons and proximity
+	// - Port B output to button LEDS
+	//
+	// - No need for interrupts as we are polling at every 0.001 seconds.
+	// - set port a with all pull-up resistors
+	// - output can be high, as we are going through transistors to power the lights.
+
+	// initialize the temp and humidity
+
+	// initialize the OLED screen
+
+	// may need to pump the i2c stuff through a single reader/writer
+	// maybe make a symaphore for the longer periodic and write stuff
+	// to limit the fast polling
 
 	azureIoTPollPeriodSeconds = AzureIoTDefaultPollPeriodSeconds;
 	struct timespec azureTelemetryPeriod = { azureIoTPollPeriodSeconds, 0 };
@@ -304,10 +332,11 @@ static void ClosePeripheralsAndHandlers(void)
 
 	CloseFdAndPrintError(buttonPollTimerFd, "ButtonTimer");
 	CloseFdAndPrintError(azureTimerFd, "AzureTimer");
-	//CloseFdAndPrintError(sendMessageButtonGpioFd, "SendMessageButton");
+	CloseFdAndPrintError(sendMessageButtonGpioFd, "SendMessageButton");
 	//CloseFdAndPrintError(sendOrientationButtonGpioFd, "SendOrientationButton");
 	//CloseFdAndPrintError(deviceTwinStatusLedGpioFd, "StatusLed");
 	CloseFdAndPrintError(epollFd, "Epoll");
+	CloseFdAndPrintError(i2cFd, "I2C");
 }
 
 /*
@@ -359,6 +388,15 @@ static void ButtonPollTimerEventHandler(EventData* eventData)
 		terminationRequired = true;
 		return;
 	}
+
+	// test if the mcp is online and active
+	// pull the port A from mcp23017
+	// break apart the bits
+	// for each in the array that is non-zero then send a message for each
+	// proximity is just a funky button
+
+	// update the screen with a thanks for each with a pause... probably should make that call async
+	// maybe setup an array with the message and have the message pop up over the
 
 	SendMessageButtonHandler();
 }
