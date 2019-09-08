@@ -14,11 +14,14 @@
 
 #include <hw/sample_hardware.h>
 
+#include "build_options.h"
+
 // Polling helpers
 #include "epoll_timerfd_utilities.h"
 
 // I2C connected sensors/modules
 #include "i2c.h";
+#include "mcp23x17.h";
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
@@ -173,6 +176,46 @@ static int InitPeripheralsAndHandlers(void)
 	// - No need for interrupts as we are polling at every 0.001 seconds.
 	// - set port a with all pull-up resistors
 	// - output can be high, as we are going through transistors to power the lights.
+	mcp23x17_init(&i2cFd, 0);
+
+	bool mcp23x17Detected = false;
+	int failCount = 10;
+	int32_t resultCheck = -1;
+
+	while (!mcp23x17Detected) {
+		// Check if mcp23x17Detected is connected
+		resultCheck = mcp23x17_device_id_get(&mcp23x17_ctx, &whoami);
+
+		if ((resultCheck < 0) || (whoami != MCP23X17_DEFAULT_HIGH)) {
+			Log_Debug("resultCheck: %d\n", resultCheck);
+			Log_Debug("whoami: %0x\n", whoami);
+		}
+		if (resultCheck < 0) {
+			Log_Debug("MCP23x17 not found!\n");
+
+			mcp23x17_status = 1;
+		}
+		else {
+				mcp23x17Detected = true;
+				Log_Debug("MCP23X17 Found!\n");
+
+				mcp23x17_status = 0;
+
+				// add setup code here
+		}
+
+		// If we failed to detect the mcp23x17Detected device, then pause before trying again.
+		if (!mcp23x17Detected) {
+			HAL_Delay(100);
+		}
+
+		if (failCount-- == 0) {
+			Log_Debug("Failed to read mcp23x17 device ID, exiting\n");
+			return -1;
+		}
+	}
+
+
 
 	// initialize the temp and humidity
 

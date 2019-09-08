@@ -20,14 +20,6 @@ int i2cFd = -1;		// i2c file handle
 extern int epollFd;
 extern volatile sig_atomic_t terminationRequired;
 
-// sleep for a bit when needed.
-void HAL_Delay(int delayTime) {
-	struct timespec ts;
-	ts.tv_sec = 0;
-	ts.tv_nsec = delayTime * 10000;
-	nanosleep(&ts, NULL);
-}
-
 /// <summary>
 ///		Initialize the I2C interface.  Sets i2cFd
 /// <summary>
@@ -54,6 +46,8 @@ int initI2c(void) {
 		return -1;
 	}
 
+	whoami = -1;
+
 	return 0;
 }
 
@@ -62,4 +56,12 @@ int initI2c(void) {
 /// </summary>
 void closeI2c(void) {
 	CloseFdAndPrintError(i2cFd, "i2c");
+}
+
+// sleep for a bit when needed.
+void HAL_Delay(int delayTime) {
+	struct timespec ts;
+	ts.tv_sec = 0;
+	ts.tv_nsec = delayTime * 10000;
+	nanosleep(&ts, NULL);
 }

@@ -25,6 +25,12 @@
     <ClCompile Include="i2c.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mcp23x17.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="build_options.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="epoll_timerfd_utilities.h">
@@ -34,6 +40,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="i2c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mcp23x17.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
