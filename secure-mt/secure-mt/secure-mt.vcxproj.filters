@@ -31,6 +31,12 @@
     <ClCompile Include="build_options.h">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="oled.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sd1306.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="epoll_timerfd_utilities.h">
@@ -43,6 +49,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mcp23x17.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sd1306.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oled.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

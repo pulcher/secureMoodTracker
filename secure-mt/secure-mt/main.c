@@ -22,6 +22,7 @@
 // I2C connected sensors/modules
 #include "i2c.h";
 #include "mcp23x17.h";
+#include "oled.h"
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
@@ -169,6 +170,21 @@ static int InitPeripheralsAndHandlers(void)
 		return -1;
 	}
 
+	// initialize the OLED screen
+		// Start OLED
+	if (oled_init())
+	{
+		Log_Debug("OLED not found!\n");
+	}
+	else
+	{
+		Log_Debug("OLED found!\n");
+	}
+
+	// Draw AVNET logo
+	oled_draw_logo();
+	//oled_i2c_bus_status(0);
+
 	// initialize the MCP23017
 	// - Port A input from buttons and proximity
 	// - Port B output to button LEDS
@@ -202,6 +218,24 @@ static int InitPeripheralsAndHandlers(void)
 				mcp23x17_status = 0;
 
 				// add setup code here
+				uint8_t setOuputBank = 0x00U;
+				mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_IODIRB, &setOuputBank, 1);
+
+				uint8_t testRead = 0xffU;
+
+				uint8_t test = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_IODIRB, &testRead, 1);
+
+				Log_Debug("test: %d\n", test);
+				Log_Debug("testRead: %0x\n", testRead);
+
+				// testing an led to light up
+				//uint8_t testOutput = 0x55U;
+
+				//ssize_t writeRet = mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_GPIOB, &testOutput, 1);
+
+				//uint8_t readRet = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_GPIOB, &testRead, 1);
+				//Log_Debug("readRet: %d\n", readRet);
+				//Log_Debug("testRead: %0x\n", testRead);
 		}
 
 		// If we failed to detect the mcp23x17Detected device, then pause before trying again.
@@ -215,11 +249,7 @@ static int InitPeripheralsAndHandlers(void)
 		}
 	}
 
-
-
 	// initialize the temp and humidity
-
-	// initialize the OLED screen
 
 	// may need to pump the i2c stuff through a single reader/writer
 	// maybe make a symaphore for the longer periodic and write stuff
