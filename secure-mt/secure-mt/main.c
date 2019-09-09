@@ -23,6 +23,8 @@
 #include "i2c.h";
 #include "mcp23x17.h";
 #include "oled.h"
+#include "lsm6dso_reg.h"
+#include "lps22hh_reg.h"
 
 // Azure IoT SDK
 #include <iothub_client_core_common.h>
@@ -104,7 +106,7 @@ int main(int argc, char* argv[])
 
 	// Fire up the timer and the Event Handlers
 	if (InitPeripheralsAndHandlers() != 0) {
-		terminationRequired = true;
+		//terminationRequired = true;
 	}
 
 	// Main loop
@@ -244,12 +246,55 @@ static int InitPeripheralsAndHandlers(void)
 		}
 
 		if (failCount-- == 0) {
-			Log_Debug("Failed to read mcp23x17 device ID, exiting\n");
+			Log_Debug("Failed to read mcp23x17 device ID.\n");
 			return -1;
 		}
 	}
 
 	// initialize the temp and humidity
+
+	// lps22hh specific init
+
+	bool lps22hhDetected = false;
+	failCount = 10;
+
+	while (!lps22hhDetected) {
+
+		// Enable pull up on master I2C interface.
+		lsm6dso_sh_pin_mode_set(&dev_ctx, LSM6DSO_INTERNAL_PULL_UP);
+
+		// Check if LPS22HH is connected to Sensor Hub
+		lps22hh_device_id_get(&pressure_ctx, &whoami);
+		if (whoami != LPS22HH_ID) {
+			Log_Debug("LPS22HH not found!\n");
+		}
+		else {
+			lps22hhDetected = true;
+			Log_Debug("LPS22HH Found!\n");
+		}
+
+		// Restore the default configuration
+		lps22hh_reset_set(&pressure_ctx, PROPERTY_ENABLE);
+		do {
+			lps22hh_reset_get(&pressure_ctx, &rst);
+		} while (rst);
+
+		// Enable Block Data Update
+		lps22hh_block_data_update_set(&pressure_ctx, PROPERTY_ENABLE);
+
+		//Set Output Data Rate
+		lps22hh_data_rate_set(&pressure_ctx, LPS22HH_10_Hz_LOW_NOISE);
+
+		// If we failed to detect the lps22hh device, then pause before trying again.
+		if (!lps22hhDetected) {
+			HAL_Delay(100);
+		}
+
+		if (failCount-- == 0) {
+			Log_Debug("Failed to read LSM22HH device ID, exiting\n");
+			return -1;
+		}
+	}
 
 	// may need to pump the i2c stuff through a single reader/writer
 	// maybe make a symaphore for the longer periodic and write stuff

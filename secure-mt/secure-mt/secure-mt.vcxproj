@@ -45,6 +45,8 @@
     <ClCompile Include="build_options.h" />
     <ClCompile Include="epoll_timerfd_utilities.c" />
     <ClCompile Include="i2c.c" />
+    <ClCompile Include="lps22hh_reg.c" />
+    <ClCompile Include="lsm6dso_reg.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="mcp23x17.c" />
     <ClCompile Include="oled.c" />
@@ -56,6 +58,8 @@
     <ClInclude Include="epoll_timerfd_utilities.h" />
     <ClInclude Include="font.h" />
     <ClInclude Include="i2c.h" />
+    <ClInclude Include="lps22hh_reg.h" />
+    <ClInclude Include="lsm6dso_reg.h" />
     <ClInclude Include="mcp23x17.h" />
     <ClInclude Include="oled.h" />
     <ClInclude Include="sd1306.h" />
