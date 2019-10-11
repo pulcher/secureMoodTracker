@@ -140,14 +140,14 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			sd1306_draw_string(OLED_LINE_2_X, OLED_LINE_2_Y, str_lsmod_sta, FONT_SIZE_LINE, white_pixel);
 
 			// Show LSMOD status
-			if (lsm6dso_status == 0)
-			{
-				sd1306_draw_string(sizeof(str_lsmod_sta) * 6, OLED_LINE_2_Y, "OK", FONT_SIZE_LINE, white_pixel);
-			}
-			else
-			{
-				sd1306_draw_string(sizeof(str_lsmod_sta) * 6, OLED_LINE_2_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
-			}
+			//if (lsm6dso_status == 0)
+			//{
+			//	sd1306_draw_string(sizeof(str_lsmod_sta) * 6, OLED_LINE_2_Y, "OK", FONT_SIZE_LINE, white_pixel);
+			//}
+			//else
+			//{
+			//	sd1306_draw_string(sizeof(str_lsmod_sta) * 6, OLED_LINE_2_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
+			//}
 		}
 		break;
 		case 2:
@@ -155,15 +155,15 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			// Draw a label at line 3
 			sd1306_draw_string(OLED_LINE_3_X, OLED_LINE_3_Y, str_lps22_sta, FONT_SIZE_LINE, white_pixel);
 
-			// Show LPS22 status
-			if (lps22hh_status == 0)
-			{
-				sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "OK", FONT_SIZE_LINE, white_pixel);
-			}
-			else
-			{
-				sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
-			}
+			//// Show LPS22 status
+			//if (lps22hh_status == 0)
+			//{
+			//	sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "OK", FONT_SIZE_LINE, white_pixel);
+			//}
+			//else
+			//{
+			//	sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
+			//}
 		}
 		break;
 		case 3:
@@ -202,40 +202,40 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			sd1306_draw_string(OLED_LINE_2_X, OLED_LINE_2_Y, str_lsmod_sta, FONT_SIZE_LINE, white_pixel);
 
 			// Show LSMOD status
-			if (lsm6dso_status == 0)
-			{
-				sd1306_draw_string(sizeof(str_lsmod_sta) * 6, OLED_LINE_2_Y, "OK", FONT_SIZE_LINE, white_pixel);
-			}
-			else
-			{
-				sd1306_draw_string(sizeof(str_lsmod_sta) * 6, OLED_LINE_2_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
-			}
+			//if (lsm6dso_status == 0)
+			//{
+			//	sd1306_draw_string(sizeof(str_lsmod_sta) * 6, OLED_LINE_2_Y, "OK", FONT_SIZE_LINE, white_pixel);
+			//}
+			//else
+			//{
+			//	sd1306_draw_string(sizeof(str_lsmod_sta) * 6, OLED_LINE_2_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
+			//}
 
 			// Draw a label at line 3
 			sd1306_draw_string(OLED_LINE_3_X, OLED_LINE_3_Y, str_lps22_sta, FONT_SIZE_LINE, white_pixel);
 
-			// Show LPS22 status
-			if (lps22hh_status == 0)
-			{
-				sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "OK", FONT_SIZE_LINE, white_pixel);
-			}
-			else
-			{
-				sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
-			}
+			//// Show LPS22 status
+			//if (lps22hh_status == 0)
+			//{
+			//	sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "OK", FONT_SIZE_LINE, white_pixel);
+			//}
+			//else
+			//{
+			//	sd1306_draw_string(sizeof(str_lps22_sta) * 6, OLED_LINE_3_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
+			//}
 
 			// Draw a label at line 5
 			sd1306_draw_string(OLED_LINE_5_X, OLED_LINE_5_Y, str_rtcore_sta, FONT_SIZE_LINE, white_pixel);
 
 			// Show RTcore status
-			if ( RTCore_status == 0)
-			{
-				sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_5_Y, "OK", FONT_SIZE_LINE, white_pixel);
-			}
-			else
-			{
-				sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_5_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
-			}
+			//if ( RTCore_status == 0)
+			//{
+			//	sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_5_Y, "OK", FONT_SIZE_LINE, white_pixel);
+			//}
+			//else
+			//{
+			//	sd1306_draw_string(sizeof(str_rtcore_sta) * 6, OLED_LINE_5_Y, "ERROR", FONT_SIZE_LINE, white_pixel);
+			//}
 		}
 		break;
 		default:

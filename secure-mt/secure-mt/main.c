@@ -185,7 +185,7 @@ static int InitPeripheralsAndHandlers(void)
 
 	// Draw AVNET logo
 	oled_draw_logo();
-	//oled_i2c_bus_status(0);
+	oled_i2c_bus_status(0);
 
 	// initialize the MCP23017
 	// - Port A input from buttons and proximity
