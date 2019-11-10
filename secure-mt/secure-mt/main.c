@@ -71,12 +71,49 @@ static const int AzureIoTMaxReconnectPeriodSeconds = 1 * 60;
 static int azureIoTPollPeriodSeconds = -1;
 
 // Button state variables
+#define IDX_GREEN_BTN 0
+#define IDX_YELLOW_BTN 1
+#define IDX_RED_BTN 2
+#define IDX_PROXIMITY 3
+
+#define GREEN_VOTE 3
+#define YELLOW_VOTE 2
+#define RED_VOTE 1
+
+#define NUM_INPUT_TRACKING 4
+
+#define GREEN_ELEMENT_NAME "HappyButton"
+#define YELLOW_ELEMENT_NAME "MehButton"
+#define RED_ELEMENT_NAME "MadButton"
+#define PROXIMITY_ELEMENT_NAME "ProximityAlert"
+
+struct InputState {
+	char ElementName[20];
+	int Vote;
+	int State;
+};
+
+struct InputState previousInputState[NUM_INPUT_TRACKING] = {
+	{GREEN_ELEMENT_NAME, 3, 0},
+	{YELLOW_ELEMENT_NAME, 2, 0},
+	{RED_ELEMENT_NAME, 1, 0},
+	{PROXIMITY_ELEMENT_NAME, 0, 0}
+};
+
+struct InputState currentInputState[NUM_INPUT_TRACKING] = {
+	{GREEN_ELEMENT_NAME, 3, 0},
+	{YELLOW_ELEMENT_NAME, 2, 0},
+	{RED_ELEMENT_NAME, 1, 0},
+	{PROXIMITY_ELEMENT_NAME, 0, 0}
+};
+
 static GPIO_Value_Type sendMessageButtonState = GPIO_Value_High;
 
 static void ButtonPollTimerEventHandler(EventData* eventData);
 static bool IsButtonPressed(int fd, GPIO_Value_Type* oldState);
 static void SendMessageButtonHandler(void);
 static void AzureTimerEventHandler(EventData* eventData);
+static void HandleInput(int index);
 
 // event handler data structures. Only the event handler field needs to be populated.
 static EventData buttonPollEventData = { .eventHandler = &ButtonPollTimerEventHandler };
@@ -230,14 +267,24 @@ static int InitPeripheralsAndHandlers(void)
 				Log_Debug("test: %d\n", test);
 				Log_Debug("testRead: %0x\n", testRead);
 
-				// testing an led to light up
-				//uint8_t testOutput = 0x55U;
+				// Setup default lights
+				uint8_t testOutput = 0x07U;
 
-				//ssize_t writeRet = mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_GPIOB, &testOutput, 1);
+				ssize_t writeRet = mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_GPIOB, &testOutput, 1);
 
-				//uint8_t readRet = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_GPIOB, &testRead, 1);
-				//Log_Debug("readRet: %d\n", readRet);
-				//Log_Debug("testRead: %0x\n", testRead);
+				uint8_t readRet = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_GPIOB, &testRead, 1);
+				Log_Debug("readRet: %d\n", readRet);
+				Log_Debug("testRead: %0x\n", testRead);
+
+				// Setup the input buttons
+				uint8_t baseInputState = 0xffU;  // this is the default, but I am making sure
+				writeRet = mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_IODIRA, &baseInputState, 1);
+				writeRet = mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_GPPUA, &baseInputState, 1);
+
+				readRet = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_GPIOA, &testRead, 1);
+
+				Log_Debug("readRet(portA): %d\n", readRet);
+				Log_Debug("testRead(portA): %0x\n", testRead);
 		}
 
 		// If we failed to detect the mcp23x17Detected device, then pause before trying again.
@@ -327,7 +374,10 @@ static void HubConnectionStatusCallback(IOTHUB_CLIENT_CONNECTION_STATUS result,
 ///     Sets up the Azure IoT Hub connection (creates the iothubClientHandle)
 ///     When the SAS Token for a device expires the connection needs to be recreated
 ///     which is why this is not simply a one time call.
+
 /// </summary>
+
+
 static void SetupAzureClient(void)
 {
 	if (iothubClientHandle != NULL)
@@ -498,6 +548,53 @@ static void SendMessageButtonHandler(void)
 }
 
 /// <summary>
+/// IsInputStateChanged(index)
+/// Compare the state of the input and report back whether the state has changed from the last time checked
+/// </summary>
+static bool IsInputStateChanged(int index)
+{
+	return currentInputState[index].State != previousInputState[index].State;
+}
+
+/// <summary>
+/// UpdateButtonLED
+/// Read the current state of the input and update the LEDS of the buttons.
+/// </summary>
+static void UpdateButtonLED()
+{
+	uint8_t buttonState = 0x00U;
+
+	for (size_t index = 2; index >= 0; index--)
+	{
+		buttonState << 1;
+	}
+}
+
+/// <summary>
+/// Updates the current status of the input
+/// - checks if the state is changed
+/// - updates LED output to reflect the state
+/// - updates the vote totals
+/// - send message on low input (button press)
+/// <summary>
+static void HandleInput(int index)
+{
+	if (!IsInputStateChanged(index))
+		return;
+
+	UpdateButtonLED();	// will read the current state and update the lights.
+
+	if (currentInputState[index].State) {
+		//updateTotals(currentInputState[index].Vote);
+		Log_Debug("Button Pressed: %s.\n", currentInputState[index].ElementName);
+		SendTelemetry(currentInputState[index].ElementName, "True");
+	}
+	else {
+		Log_Debug("Button Released: %s.\n", currentInputState[index].ElementName);
+		SendTelemetry(currentInputState[index].ElementName, "False");
+	}
+}
+
 /// Button timer event:  Check the status of buttons A and B
 /// </summary>
 static void ButtonPollTimerEventHandler(EventData* eventData)
@@ -509,12 +606,29 @@ static void ButtonPollTimerEventHandler(EventData* eventData)
 
 	// test if the mcp is online and active
 	// pull the port A from mcp23017
-	// break apart the bits
-	// for each in the array that is non-zero then send a message for each
-	// proximity is just a funky button
+	if (mcp23x17_status) {
 
-	// update the screen with a thanks for each with a pause... probably should make that call async
-	// maybe setup an array with the message and have the message pop up over the
+		// break apart the bits
+		//RetainPreviousState();
+		//UpdateCurrentState();
+
+		// Send in the array of structs that holds:
+		// - state
+		// - Message to send to Azure
+		// - value to adjust the daily totals if any
+		// - Element Name for Azure
+		// -
+		HandleInput(IDX_GREEN_BTN);
+		HandleInput(IDX_YELLOW_BTN);
+		HandleInput(IDX_RED_BTN);
+		HandleInput(IDX_PROXIMITY);
+
+		// for each in the array that is non-zero then send a message for each
+		// proximity is just a funky button
+
+		// update the screen with a thanks for each with a pause... probably should make that call async
+		// maybe setup an array with the message and have the message pop up over the
+	}
 
 	SendMessageButtonHandler();
 }

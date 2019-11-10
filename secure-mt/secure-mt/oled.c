@@ -125,7 +125,8 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			clear_oled_buffer();
 
 			// Draw the title
-			sd1306_draw_string(OLED_TITLE_X, OLED_TITLE_Y, " I2C Init", FONT_SIZE_TITLE, white_pixel);
+			//sd1306_draw_string(OLED_TITLE_X, OLED_TITLE_Y, " I2C Init", FONT_SIZE_TITLE, white_pixel);
+			sd1306_draw_string(OLED_TITLE_X, OLED_TITLE_Y, "Mood-A-Tron", FONT_SIZE_TITLE, white_pixel);
 
 			// Draw a label at line 1
 			sd1306_draw_string(OLED_LINE_1_X, OLED_LINE_1_Y, str_bus_sta, FONT_SIZE_LINE, white_pixel);
