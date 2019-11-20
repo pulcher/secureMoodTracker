@@ -113,6 +113,8 @@ static void ButtonPollTimerEventHandler(EventData* eventData);
 static bool IsButtonPressed(int fd, GPIO_Value_Type* oldState);
 static void SendMessageButtonHandler(void);
 static void AzureTimerEventHandler(EventData* eventData);
+static void RetainPreviousState();
+static void UpdateCurrentState();
 static void HandleInput(int index);
 
 // event handler data structures. Only the event handler field needs to be populated.
@@ -553,7 +555,8 @@ static void SendMessageButtonHandler(void)
 /// </summary>
 static bool IsInputStateChanged(int index)
 {
-	return currentInputState[index].State != previousInputState[index].State;
+	bool changed = currentInputState[index].State != previousInputState[index].State;
+	return changed;
 }
 
 /// <summary>
@@ -564,10 +567,12 @@ static void UpdateButtonLED()
 {
 	uint8_t buttonState = 0x00U;
 
-	for (size_t index = 2; index >= 0; index--)
-	{
-		buttonState << 1;
-	}
+	//for (size_t index = 2; index >= 0; index--)
+	//{
+	//	buttonState << 1;
+	//}
+
+	//uint8_t checkState = buttonState;
 }
 
 /// <summary>
@@ -595,6 +600,41 @@ static void HandleInput(int index)
 	}
 }
 
+/// <summary>
+/// RetainPreviousState will copy the current button state to a previous for comparison
+/// </summary>
+static void RetainPreviousState()
+{
+	for (size_t i = 0; i < 4; i++)
+	{
+		previousInputState[i].State = currentInputState[i].State;
+	}
+}
+
+/// <summary>
+/// UpdateCurrentState will read the current input state then update the currentButtonState
+/// to be used by the rest of the program
+/// </summary>
+static void UpdateCurrentState()
+{
+	uint8_t inputState = 0x00U;
+
+	// grab the input byte from the MCP23017
+	uint8_t readRet = mcp23x17_read_reg(&mcp23x17_ctx, MCP23017_GPIOA, &inputState, 1);
+
+	uint8_t checkPosition = 0x01U;
+
+	// Shift off the value of each of the bits into the correct position of the state
+	for (size_t i = 0; i < 4; i++)
+	{
+		currentInputState[i].State = checkPosition & inputState ? 0 : 1;
+
+		// move the checkPosition to what we care about
+		checkPosition <<= 1;
+	}
+}
+
+/// <summary>
 /// Button timer event:  Check the status of buttons A and B
 /// </summary>
 static void ButtonPollTimerEventHandler(EventData* eventData)
@@ -606,11 +646,11 @@ static void ButtonPollTimerEventHandler(EventData* eventData)
 
 	// test if the mcp is online and active
 	// pull the port A from mcp23017
-	if (mcp23x17_status) {
+	if (!mcp23x17_status) {
 
 		// break apart the bits
-		//RetainPreviousState();
-		//UpdateCurrentState();
+		RetainPreviousState();
+		UpdateCurrentState();
 
 		// Send in the array of structs that holds:
 		// - state
