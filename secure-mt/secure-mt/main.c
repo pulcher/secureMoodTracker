@@ -565,14 +565,18 @@ static bool IsInputStateChanged(int index)
 /// </summary>
 static void UpdateButtonLED()
 {
-	uint8_t buttonState = 0x00U;
+	uint8_t buttonState = 0x007;
 
-	//for (size_t index = 2; index >= 0; index--)
-	//{
-	//	buttonState << 1;
-	//}
+	if (currentInputState[0].State)
+		buttonState = buttonState & 0x06U;  // bit 0
 
-	//uint8_t checkState = buttonState;
+	if (currentInputState[1].State)
+		buttonState = buttonState & 0x05U;  // bit 1
+
+	if (currentInputState[2].State)
+		buttonState = buttonState & 0x03U;  // bit 2
+
+	ssize_t writeRet = mcp23x17_write_reg(&mcp23x17_ctx, MCP23017_GPIOB, &buttonState, 1);
 }
 
 /// <summary>
