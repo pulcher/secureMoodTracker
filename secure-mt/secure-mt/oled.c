@@ -107,15 +107,20 @@ void update_oled()
   * @param  sensor_status: Sensor status
   * @retval None.
   */
-void oled_i2c_bus_status(uint8_t sensor_number)
+void oled_i2c_bus_status(uint8_t sensor_number, float currentMood, int voteCount, int motionCount)
 {
+	char buf[48] = {0};
 
 	// Strings for labels
-	uint8_t str_bus_sta[]   = "I2C Bus Status:";
-	uint8_t str_lsmod_sta[] = "LSM6DSO Accel.:";
-	uint8_t str_lps22_sta[] = "LPS22HH Barom.:";
+	uint8_t titleMessage[] = "Mood-A-Tron";
+	//uint8_t str_bus_sta[]   = "I2C Bus Status:";
+	//uint8_t str_lsmod_sta[] = "LSM6DSO Accel.:";
+	//uint8_t str_lps22_sta[] = "LPS22HH Barom.:";
 	uint8_t str_mcp23x17_sta[] = "MCP23X17 GPIO.:";
-	uint8_t str_rtcore_sta[] = "Real Time Core:";
+	//uint8_t str_rtcore_sta[] = "Real Time Core:";
+	uint8_t avgMoodMessage[] = "Average mood:";
+	uint8_t totalVoteMessage[] = "Total votes:";
+	uint8_t motionSeen[] = "Motion count:";
 
 	switch (sensor_number)
 	{
@@ -126,19 +131,39 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 
 			// Draw the title
 			//sd1306_draw_string(OLED_TITLE_X, OLED_TITLE_Y, " I2C Init", FONT_SIZE_TITLE, white_pixel);
-			sd1306_draw_string(OLED_TITLE_X, OLED_TITLE_Y, "Mood-A-Tron", FONT_SIZE_TITLE, white_pixel);
+			sd1306_draw_string(OLED_TITLE_X, OLED_TITLE_Y, titleMessage, FONT_SIZE_TITLE, white_pixel);
+
+			// Draw the current mood average label
+			sd1306_draw_string(OLED_LINE_2_X, OLED_LINE_2_Y, avgMoodMessage, FONT_SIZE_LINE, white_pixel);
+			snprintf(buf, sizeof(buf), "%f", currentMood);
+			sd1306_draw_string(sizeof(avgMoodMessage) * 6, OLED_LINE_2_Y, buf, FONT_SIZE_LINE, white_pixel);
+
+			// Draw the total number of votes label
+			sd1306_draw_string(OLED_LINE_3_X, OLED_LINE_3_Y, totalVoteMessage, FONT_SIZE_LINE, white_pixel);
+			snprintf(buf, sizeof(buf), "%d", voteCount);
+			sd1306_draw_string(sizeof(totalVoteMessage) * 6, OLED_LINE_3_Y, buf, FONT_SIZE_LINE, white_pixel);
+
+			// Draw the amount of movement detected label
+			sd1306_draw_string(OLED_LINE_5_X, OLED_LINE_5_Y, motionSeen, FONT_SIZE_LINE, white_pixel);
+			if (motionCount >= 0) {
+				snprintf(buf, sizeof(buf), "%d", motionCount);
+			}
+			else {
+				snprintf(buf, sizeof(buf), "disabled");
+			}
+			sd1306_draw_string(sizeof(motionSeen) * 6, OLED_LINE_5_Y, buf, FONT_SIZE_LINE, white_pixel);
 
 			// Draw a label at line 1
-			sd1306_draw_string(OLED_LINE_1_X, OLED_LINE_1_Y, str_bus_sta, FONT_SIZE_LINE, white_pixel);
+			//sd1306_draw_string(OLED_LINE_1_X, OLED_LINE_1_Y, str_bus_sta, FONT_SIZE_LINE, white_pixel);
 
-			// I2C bus OK, if not OLED doesn't show a image
-			sd1306_draw_string(sizeof(str_bus_sta) * 6, OLED_LINE_1_Y, "OK", FONT_SIZE_LINE, white_pixel);
+			//// I2C bus OK, if not OLED doesn't show a image
+			//sd1306_draw_string(sizeof(str_bus_sta) * 6, OLED_LINE_1_Y, "OK", FONT_SIZE_LINE, white_pixel);
 		}
 		break;
 		case 1:
 		{
 			// Draw a label at line 2
-			sd1306_draw_string(OLED_LINE_2_X, OLED_LINE_2_Y, str_lsmod_sta, FONT_SIZE_LINE, white_pixel);
+			//sd1306_draw_string(OLED_LINE_2_X, OLED_LINE_2_Y, str_lsmod_sta, FONT_SIZE_LINE, white_pixel);
 
 			// Show LSMOD status
 			//if (lsm6dso_status == 0)
@@ -154,7 +179,7 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 		case 2:
 		{
 			// Draw a label at line 3
-			sd1306_draw_string(OLED_LINE_3_X, OLED_LINE_3_Y, str_lps22_sta, FONT_SIZE_LINE, white_pixel);
+			//sd1306_draw_string(OLED_LINE_3_X, OLED_LINE_3_Y, str_lps22_sta, FONT_SIZE_LINE, white_pixel);
 
 			//// Show LPS22 status
 			//if (lps22hh_status == 0)
@@ -170,7 +195,7 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 		case 3:
 		{
 			// Draw a label at line 3
-			sd1306_draw_string(OLED_LINE_4_X, OLED_LINE_4_Y, str_mcp23x17_sta, FONT_SIZE_LINE, white_pixel);
+			//sd1306_draw_string(OLED_LINE_4_X, OLED_LINE_4_Y, str_mcp23x17_sta, FONT_SIZE_LINE, white_pixel);
 
 			// Show mcp23017 status
 			if (mcp23x17_status == 0)
@@ -191,16 +216,16 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			clear_oled_buffer();
 
 			// Draw the title
-			sd1306_draw_string(OLED_TITLE_X, OLED_TITLE_Y, " I2C Init", FONT_SIZE_TITLE, white_pixel);
+			//sd1306_draw_string(OLED_TITLE_X, OLED_TITLE_Y, " I2C Init", FONT_SIZE_TITLE, white_pixel);
 
-			// Draw a label at line 1
-			sd1306_draw_string(OLED_LINE_1_X, OLED_LINE_1_Y, str_bus_sta, FONT_SIZE_LINE, white_pixel);
+			//// Draw a label at line 1
+			//sd1306_draw_string(OLED_LINE_1_X, OLED_LINE_1_Y, str_bus_sta, FONT_SIZE_LINE, white_pixel);
 
-			// I2C bus OK, if not OLED doesn't show a image
-			sd1306_draw_string(sizeof(str_bus_sta) * 6, OLED_LINE_1_Y, "OK", FONT_SIZE_LINE, white_pixel);
+			//// I2C bus OK, if not OLED doesn't show a image
+			//sd1306_draw_string(sizeof(str_bus_sta) * 6, OLED_LINE_1_Y, "OK", FONT_SIZE_LINE, white_pixel);
 
-			// Draw a label at line 2
-			sd1306_draw_string(OLED_LINE_2_X, OLED_LINE_2_Y, str_lsmod_sta, FONT_SIZE_LINE, white_pixel);
+			//// Draw a label at line 2
+			//sd1306_draw_string(OLED_LINE_2_X, OLED_LINE_2_Y, str_lsmod_sta, FONT_SIZE_LINE, white_pixel);
 
 			// Show LSMOD status
 			//if (lsm6dso_status == 0)
@@ -213,7 +238,7 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			//}
 
 			// Draw a label at line 3
-			sd1306_draw_string(OLED_LINE_3_X, OLED_LINE_3_Y, str_lps22_sta, FONT_SIZE_LINE, white_pixel);
+			// sd1306_draw_string(OLED_LINE_3_X, OLED_LINE_3_Y, str_lps22_sta, FONT_SIZE_LINE, white_pixel);
 
 			//// Show LPS22 status
 			//if (lps22hh_status == 0)
@@ -226,7 +251,7 @@ void oled_i2c_bus_status(uint8_t sensor_number)
 			//}
 
 			// Draw a label at line 5
-			sd1306_draw_string(OLED_LINE_5_X, OLED_LINE_5_Y, str_rtcore_sta, FONT_SIZE_LINE, white_pixel);
+			// sd1306_draw_string(OLED_LINE_5_X, OLED_LINE_5_Y, str_rtcore_sta, FONT_SIZE_LINE, white_pixel);
 
 			// Show RTcore status
 			//if ( RTCore_status == 0)

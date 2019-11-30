@@ -70,6 +70,14 @@ static const int AzureIoTMaxReconnectPeriodSeconds = 1 * 60;
 
 static int azureIoTPollPeriodSeconds = -1;
 
+// Statistics
+static int voteCount = 0;
+static float voteTotal = 0.0;
+static float currentMood = 0.0;  // 2.0 is the meh value.  So, it is biased +2 for average reporting.
+static int motionCount = -1;
+
+static bool needScreenUpdate = true;	// we need to update the screen at least once. :)
+
 // Button state variables
 #define IDX_GREEN_BTN 0
 #define IDX_YELLOW_BTN 1
@@ -115,7 +123,9 @@ static void SendMessageButtonHandler(void);
 static void AzureTimerEventHandler(EventData* eventData);
 static void RetainPreviousState();
 static void UpdateCurrentState();
-static void HandleInput(int index);
+static void HandleInput(int index, int isButton);
+static void UpdatePasserByCount();
+static void UpdateMood(int index);
 
 // event handler data structures. Only the event handler field needs to be populated.
 static EventData buttonPollEventData = { .eventHandler = &ButtonPollTimerEventHandler };
@@ -224,7 +234,7 @@ static int InitPeripheralsAndHandlers(void)
 
 	// Draw AVNET logo
 	oled_draw_logo();
-	oled_i2c_bus_status(0);
+	oled_i2c_bus_status(0, currentMood, voteCount, motionCount);
 
 	// initialize the MCP23017
 	// - Port A input from buttons and proximity
@@ -580,13 +590,40 @@ static void UpdateButtonLED()
 }
 
 /// <summary>
+/// UpdateMood(index) will increment the vote and re-calculate the current mood.
+/// will also set that the display needs to be updated.
+/// </summary>
+static void UpdateMood(int vote)
+{
+	voteTotal += vote;
+	voteCount += 1.0;
+	currentMood = voteTotal/voteCount;
+
+	needScreenUpdate = true;
+
+	Log_Debug("Vote Count: %f, Vote Total: %f, Current Mood: %f\n", voteCount, voteTotal, currentMood);
+}
+
+/// <summary>
+/// UpdatePasserByCount() will increment the number of people seen.
+/// </summary>
+static void UpdatePasserByCount()
+{
+	motionCount++;
+
+	needScreenUpdate = true;
+
+	Log_Debug("Passer by count: %f\n", motionCount);
+}
+
+/// <summary>
 /// Updates the current status of the input
 /// - checks if the state is changed
 /// - updates LED output to reflect the state
 /// - updates the vote totals
 /// - send message on low input (button press)
 /// <summary>
-static void HandleInput(int index)
+static void HandleInput(int index, int isButton)
 {
 	if (!IsInputStateChanged(index))
 		return;
@@ -600,6 +637,13 @@ static void HandleInput(int index)
 	}
 	else {
 		Log_Debug("Button Released: %s.\n", currentInputState[index].ElementName);
+
+		if (isButton) {
+			UpdateMood(currentInputState[index].Vote);
+		}
+		else {
+			UpdatePasserByCount();
+		}
 		SendTelemetry(currentInputState[index].ElementName, "False");
 	}
 }
@@ -662,10 +706,10 @@ static void ButtonPollTimerEventHandler(EventData* eventData)
 		// - value to adjust the daily totals if any
 		// - Element Name for Azure
 		// -
-		HandleInput(IDX_GREEN_BTN);
-		HandleInput(IDX_YELLOW_BTN);
-		HandleInput(IDX_RED_BTN);
-		HandleInput(IDX_PROXIMITY);
+		HandleInput(IDX_GREEN_BTN, 1);
+		HandleInput(IDX_YELLOW_BTN, 1);
+		HandleInput(IDX_RED_BTN, 1);
+		HandleInput(IDX_PROXIMITY, 0);
 
 		// for each in the array that is non-zero then send a message for each
 		// proximity is just a funky button
@@ -673,6 +717,8 @@ static void ButtonPollTimerEventHandler(EventData* eventData)
 		// update the screen with a thanks for each with a pause... probably should make that call async
 		// maybe setup an array with the message and have the message pop up over the
 	}
+
+	oled_i2c_bus_status(0, currentMood, voteCount, motionCount);
 
 	SendMessageButtonHandler();
 }
@@ -682,6 +728,8 @@ static void ButtonPollTimerEventHandler(EventData* eventData)
 /// </summary>
 static void AzureTimerEventHandler(EventData* eventData)
 {
+	char buf[24] = { 0 };
+
 	if (ConsumeTimerFdEvent(azureTimerFd) != 0) {
 		terminationRequired = true;
 		return;
@@ -699,9 +747,19 @@ static void AzureTimerEventHandler(EventData* eventData)
 
 	if (iothubAuthenticated) {
 		// this is where all the periodic status of things is sent.
-		//SendSimulatedTemperature();
+		snprintf(buf, sizeof(buf), "%f", currentMood);
+		SendTelemetry("currentMood", buf);
+
+		snprintf(buf, sizeof(buf), "%d", voteCount);
+		SendTelemetry("voteCount", buf);
+
+		snprintf(buf, sizeof(buf), "%d", motionCount);
+		SendTelemetry("motionCount", buf);
+
 		IoTHubDeviceClient_LL_DoWork(iothubClientHandle);
 	}
+
+	oled_i2c_bus_status(0, currentMood, voteCount, motionCount);
 }
 
 // Azure stuff
